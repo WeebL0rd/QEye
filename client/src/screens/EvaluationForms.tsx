@@ -109,25 +109,17 @@ export default function EvaluationForms(
       <ScrollView contentContainerStyle={[globalStyles.scrollContent, { paddingBottom: spacing.xl }]}>
         {/* Header con puntuación total */}
         <View style={{ 
-          backgroundColor: theme.surface, 
           padding: 20, 
           borderRadius: 16, 
           marginBottom: 20,
-          shadowColor: theme.shadow.color,
-          shadowOpacity: theme.shadow.opacity,
-          shadowRadius: theme.shadow.radius,
-          shadowOffset: theme.shadow.offset,
-          elevation: theme.shadow.elevation,
+
         }}>
-          <Text style={[typography.h1, { color: theme.text.primary, marginBottom: 8 }]}>
-            Evaluación QEye
-          </Text>
-          <Text style={[typography.body, { color: theme.text.secondary, marginBottom: 16 }]}>
+          <Text style={[typography.h1, { color: theme.text.primary, marginBottom: 16 }]}>
             {evaluation.projectName}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <View>
-              <Text style={[typography.small, { color: theme.text.secondary, marginBottom: 4 }]}>
+              <Text style={[typography.body, { color: theme.text.secondary, marginBottom: 4 }]}>
                 Puntuación total
               </Text>
               <Text style={[typography.h1, { color: getTotalQualityColor(), fontSize: 36 }]}>
