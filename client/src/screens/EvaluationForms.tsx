@@ -1,5 +1,8 @@
-import { View, Text, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../styles/theme';
 import { createGlobalStyles } from '../styles/styles';
 import { spacing, typography } from '../styles/theme';
@@ -8,9 +11,11 @@ import ItemCard from '../components/ItemCard';
 import rubricTemplate from '../constants/rubricTemplate';
 import { Evaluation } from '../types/evaluation';
 import { calculateTotalEvaluationScores } from '../utils/evaluationCalculations';
+import { saveEvaluation } from '../utils/evaluationParser';
 
 export default function EvaluationForms() {
   const theme = useTheme();
+  const router = useRouter();
   const globalStyles = createGlobalStyles(theme);
   const [evaluation, setEvaluation] = useState<Evaluation>(rubricTemplate);
   // Estado para controlar qué stage/item está expandido (null = ninguno)
@@ -52,9 +57,45 @@ export default function EvaluationForms() {
     return theme.deficient;
   };
 
+  const handleSave = () => {
+    const saved = saveEvaluation(evaluation);
+    //TODO: Guardar en base de datos
+    console.log('Evaluación guardada compacta:', saved);
+    alert('Evaluación guardada!');
+    //TODO: Cerrar la pantalla y regresar a la anterior actualizando con los nuevos datos
+    // o nadamás dejar la alerta y que se cierre la pantalla cuando el usuario se devuelva con el botón de back
+  };
+
   return (
-    <SafeAreaView style={globalStyles.safeArea}>
-      <ScrollView contentContainerStyle={globalStyles.scrollContent}>
+    <SafeAreaView 
+      style={{ flex: 2, backgroundColor: theme.background }} 
+      edges={['top', 'left', 'right']}
+    >
+      {/* Encabezado personalizado */}
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.border,
+        backgroundColor: theme.surface,
+      }}>
+        <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
+          {<Ionicons name="arrow-back" size={24} color={theme.text.primary} /> }
+        </TouchableOpacity>
+        <Text style={[typography.h3, { color: theme.text.primary }]}>
+          Evaluación
+        </Text>
+        <TouchableOpacity onPress={handleSave} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
+          <Text style={[typography.body, { color: theme.primary, fontWeight: '700' }]}>
+            Guardar
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={[globalStyles.scrollContent, { paddingBottom: spacing.xl }]}>
         {/* Header con puntuación total */}
         <View style={{ 
           backgroundColor: theme.surface, 

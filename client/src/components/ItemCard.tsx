@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, LayoutAnimation } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Item } from '../types/evaluation';
 import { useTheme } from '../styles/theme';
 import { createItemCardStyles } from '../styles/styles';
@@ -27,7 +27,6 @@ export default function ItemCard({ item, isExpanded, onToggle, onUpdateCriterion
   const qualityColor = getQualityColor(percentage);
 
   const handleToggle = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     onToggle();
   };
 

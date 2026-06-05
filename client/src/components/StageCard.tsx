@@ -1,13 +1,8 @@
-import { View, Text, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Stage } from '../types/evaluation';
 import { useTheme } from '../styles/theme';
 import { createStageCardStyles } from '../styles/styles';
 import { calculateStageScores } from '../utils/evaluationCalculations';
-
-// Habilitar animaciones en Android
-if (Platform.OS === 'android') {
-  UIManager.setLayoutAnimationEnabledExperimental?.(true);
-}
 
 interface StageCardProps {
   stage: Stage;
@@ -28,7 +23,6 @@ export default function StageCard({ stage, isExpanded, onToggle, children }: Sta
   };
 
   const handleToggle = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     onToggle();
   };
 
