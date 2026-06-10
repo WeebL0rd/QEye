@@ -8,7 +8,7 @@ export default function Index() {
   const router = useRouter();
 
   console.log('INDEX STATE:', { isAuthenticated, isLoading }); // ← agrega esto
-r
+
 
   useEffect(() => {
     if (isLoading) return;
