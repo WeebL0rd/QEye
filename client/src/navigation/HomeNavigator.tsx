@@ -5,11 +5,14 @@ import {
   CreateQuestionnaireScreen,
   EditQuestionnaireScreen,
 } from '../screens/QuestionnaireFormScreens';
+import EvaluationForms from '../screens/EvaluationForms';
+import { savedEvaluation } from '../constants/preloadedSavedEvaluation';
 
 export type HomeStackParamList = {
   Home: undefined;
   CreateQuestionnaire: undefined;
   EditQuestionnaire: { questionnaireId: string };
+  EvaluationForms: undefined;
 };
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
@@ -33,5 +36,11 @@ export const HomeNavigator = () => (
       component={EditQuestionnaireScreen}
       options={{ title: 'Editar cuestionario' }}
     />
+    <Stack.Screen
+      name="EvaluationForms"
+      options={{ headerShown: false }}
+    >
+      {() => <EvaluationForms evaluationMetadata={savedEvaluation} />}
+    </Stack.Screen>
   </Stack.Navigator>
 );

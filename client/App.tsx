@@ -9,7 +9,6 @@ export default function App() {
   return (
     <AuthProvider>
       <RootNavigator />
-       <EvaluationForms evaluationMetadata={savedEvaluation} />
     </AuthProvider>
   );
 }

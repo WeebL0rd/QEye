@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../styles/theme';
@@ -11,25 +11,20 @@ import ItemCard from '../components/ItemCard';
 import rubricTemplate from '../constants/rubricTemplate';
 import { Evaluation, SavedEvaluation } from '../types/evaluation';
 import { calculateTotalEvaluationScores } from '../utils/evaluationCalculations';
-import { loadEvaluation,saveEvaluation } from '../utils/evaluationParser';
+import { loadEvaluation, saveEvaluation } from '../utils/evaluationParser';
 
 interface EvaluationFormsProps {
   evaluationMetadata: SavedEvaluation;
 }
 
-export default function EvaluationForms(
-  {evaluationMetadata} : EvaluationFormsProps
-) {
-  // Cargar theme y router
+export default function EvaluationForms({ evaluationMetadata }: EvaluationFormsProps) {
   const theme = useTheme();
-  const router = useRouter();
+  const navigation = useNavigation();  // ← reemplaza useRouter()
   const globalStyles = createGlobalStyles(theme);
 
-  // Cargar evaluación
-  const loadedEvaluation = loadEvaluation(rubricTemplate, evaluationMetadata)
+  const loadedEvaluation = loadEvaluation(rubricTemplate, evaluationMetadata);
   const [evaluation, setEvaluation] = useState<Evaluation>(loadedEvaluation);
 
-  // Estado para controlar qué stage/item está expandido (null = ninguno)
   const [expandedStageId, setExpandedStageId] = useState<number | null>(null);
   const [expandedItemId, setExpandedItemId] = useState<number | null>(null);
 
@@ -53,7 +48,7 @@ export default function EvaluationForms(
 
   const handleToggleStage = (stageId: number) => {
     setExpandedStageId(prev => prev === stageId ? null : stageId);
-    setExpandedItemId(null); // Cerrar items al cambiar de stage
+    setExpandedItemId(null);
   };
 
   const handleToggleItem = (itemId: number) => {
@@ -70,19 +65,15 @@ export default function EvaluationForms(
 
   const handleSave = () => {
     const saved = saveEvaluation(evaluation);
-    //TODO: Guardar en base de datos
     console.log('Evaluación guardada compacta:', saved);
     alert('Evaluación guardada!');
-    //TODO: Cerrar la pantalla y regresar a la anterior actualizando con los nuevos datos
-    // o nadamás dejar la alerta y que se cierre la pantalla cuando el usuario se devuelva con el botón de back
   };
 
   return (
-    <SafeAreaView 
-      style={{ flex: 2, backgroundColor: theme.background }} 
+    <SafeAreaView
+      style={{ flex: 2, backgroundColor: theme.background }}
       edges={['top', 'left', 'right']}
     >
-      {/* Encabezado personalizado */}
       <View style={{
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -93,13 +84,19 @@ export default function EvaluationForms(
         borderBottomColor: theme.border,
         backgroundColor: theme.surface,
       }}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
-          {<Ionicons name="arrow-back" size={24} color={theme.text.primary} /> }
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        >
+          <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
         </TouchableOpacity>
         <Text style={[typography.h2, { color: theme.text.primary }]}>
           Editar
         </Text>
-        <TouchableOpacity onPress={handleSave} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
+        <TouchableOpacity
+          onPress={handleSave}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        >
           <Text style={[typography.body, { color: theme.primary, fontWeight: '700' }]}>
             Guardar
           </Text>
@@ -107,12 +104,10 @@ export default function EvaluationForms(
       </View>
 
       <ScrollView contentContainerStyle={[globalStyles.scrollContent, { paddingBottom: spacing.xl }]}>
-        {/* Header con puntuación total */}
-        <View style={{ 
-          padding: 20, 
-          borderRadius: 16, 
+        <View style={{
+          padding: 20,
+          borderRadius: 16,
           marginBottom: 20,
-
         }}>
           <Text style={[typography.h1, { color: theme.text.primary, marginBottom: 16 }]}>
             {evaluation.projectName}
@@ -143,7 +138,6 @@ export default function EvaluationForms(
           </View>
         </View>
 
-        {/* Lista de stages desplegables */}
         {evaluation.stages.map(stage => (
           <StageCard
             key={stage.id}
@@ -151,7 +145,6 @@ export default function EvaluationForms(
             isExpanded={expandedStageId === stage.id}
             onToggle={() => handleToggleStage(stage.id)}
           >
-            {/* Items dentro del stage expandido */}
             <View style={{ paddingLeft: 16, paddingTop: 8 }}>
               {stage.items.map(item => (
                 <ItemCard
