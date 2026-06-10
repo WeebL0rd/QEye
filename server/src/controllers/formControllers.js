@@ -1,1 +1,0 @@
-/* The form logic goes here (JSON parsing, etc) */

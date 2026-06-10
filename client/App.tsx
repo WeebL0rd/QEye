@@ -1,12 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import EvaluationForms from './src/screens/EvaluationForms';
+import { AuthProvider } from './src/context/AuthContext';
+import RootNavigator from './src/navigation/RootNavigator';
+import { savedEvaluation } from './src/constants/preloadedSavedEvaluation';
 
 export default function App() {
-  return (<EvaluationForms/>
+  return (
+    <AuthProvider>
+      <RootNavigator />
+       <EvaluationForms evaluationMetadata={savedEvaluation} />
+    </AuthProvider>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
