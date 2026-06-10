@@ -100,8 +100,13 @@ export default function EvaluationForms(
           Editar
         </Text>
         <TouchableOpacity onPress={handleSave} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
-          <Text style={[typography.body, { color: theme.primary, fontWeight: '700' }]}>
+          <Text style={[typography.body, { color: theme.primary, fontWeight: '600' }]}>
             Guardar
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/dashboard')} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
+          <Text style={[typography.body, { color: theme.primary, fontWeight: '600' }]}>
+              Dashboard
           </Text>
         </TouchableOpacity>
       </View>
