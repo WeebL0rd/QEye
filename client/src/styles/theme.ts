@@ -10,6 +10,7 @@ export const PALETTE = {
   cream:      '#FFF6F4',
 
   // Calidad
+  bad:        '#f81303',
   deficient:  '#F86F03', // orange — mal estado
   acceptable: '#FFA41B', // amber  — estado medio
   good:       '#22c55e', // verde  — buen estado (externo a la paleta, semántico)
@@ -40,6 +41,7 @@ export const lightTheme = {
   accent:            PALETTE.orange,
   accentSoft:        '#FEF0E6',
 
+  bad:               PALETTE.bad,
   deficient:         PALETTE.deficient,
   acceptable:        PALETTE.acceptable,
   good:              PALETTE.good,

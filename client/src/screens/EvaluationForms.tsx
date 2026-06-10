@@ -12,6 +12,7 @@ import rubricTemplate from '../constants/rubricTemplate';
 import { Evaluation, SavedEvaluation } from '../types/evaluation';
 import { calculateTotalEvaluationScores } from '../utils/evaluationCalculations';
 import { loadEvaluation, saveEvaluation } from '../utils/evaluationParser';
+import { useRouter } from 'expo-router';
 
 interface EvaluationFormsProps {
   evaluationMetadata: SavedEvaluation;
@@ -19,7 +20,8 @@ interface EvaluationFormsProps {
 
 export default function EvaluationForms({ evaluationMetadata }: EvaluationFormsProps) {
   const theme = useTheme();
-  const navigation = useNavigation();  // ← reemplaza useRouter()
+  //const navigation = useNavigation();  // ← reemplaza useRouter()
+  const router = useRouter();
   const globalStyles = createGlobalStyles(theme);
 
   const loadedEvaluation = loadEvaluation(rubricTemplate, evaluationMetadata);
@@ -85,7 +87,7 @@ export default function EvaluationForms({ evaluationMetadata }: EvaluationFormsP
         backgroundColor: theme.surface,
       }}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => router.back()}
           hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
         >
           <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
@@ -93,12 +95,14 @@ export default function EvaluationForms({ evaluationMetadata }: EvaluationFormsP
         <Text style={[typography.h2, { color: theme.text.primary }]}>
           Editar
         </Text>
-        <TouchableOpacity
-          onPress={handleSave}
-          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-        >
-          <Text style={[typography.body, { color: theme.primary, fontWeight: '700' }]}>
+        <TouchableOpacity onPress={handleSave} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
+          <Text style={[typography.body, { color: theme.primary, fontWeight: '600' }]}>
             Guardar
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/dashboard')} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
+          <Text style={[typography.body, { color: theme.primary, fontWeight: '600' }]}>
+              Dashboard
           </Text>
         </TouchableOpacity>
       </View>
