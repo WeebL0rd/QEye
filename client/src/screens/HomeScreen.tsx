@@ -1,35 +1,92 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl,
+  View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, ActivityIndicator, Alert,
 } from 'react-native';
-import { router } from 'expo-router';
-import { useTheme, spacing, radius, typography } from '../styles/theme';
+import { router, useFocusEffect } from 'expo-router';
+import { useTheme, spacing, radius, typography } from '../styles/theme' 
+import api from '../services/api';
 
-// 👈 Reemplaza con tu tipo real cuando esté listo
-type Item = {
+type EvaluationItem = {
   id: string;
-  title: string;
-  description?: string;
-  isPublished: boolean;
+  userId: string;
+  projectName: string;
+  createdAt: string;
+  updatedAt: string;
+  scores: { criterionId: number; score: number }[];
 };
 
-// Datos de prueba para ver la pantalla
-const MOCK_ITEMS: Item[] = [
-  { id: '1', title: 'Evaluación ejemplo', description: 'Descripción de prueba', isPublished: true },
-  { id: '2', title: 'Borrador ejemplo', isPublished: false },
-];
+const formatDate = (isoString: string) => {
+  const date = new Date(isoString);
+  return date.toLocaleDateString('es-CR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+};
 
 const HomeScreen = () => {
   const theme = useTheme();
-  const [items] = useState<Item[]>(MOCK_ITEMS);
+  const [items, setItems] = useState<EvaluationItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const fetchDocuments = async () => {
+    try {
+      const response = await api.get('/docs');
+      if (response.data.success) {
+        setItems(response.data.documents);
+      }
+    } catch (error) {
+      console.error('Error al cargar evaluaciones:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      fetchDocuments();
+    }, [])
+  );
 
   const onRefresh = () => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000); // 👈 reemplazar con fetch real
+    fetchDocuments();
   };
 
-  const renderItem = ({ item }: { item: Item }) => (
+  const handleEdit = (item: EvaluationItem) => {
+    router.push({
+      pathname: '/form',
+      params: { evaluation: JSON.stringify(item) },
+    });
+  };
+
+  const handleDelete = (item: EvaluationItem) => {
+    Alert.alert(
+      'Eliminar evaluación',
+      `¿Estás seguro que querés eliminar "${item.projectName}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.delete(`/docs/delete/${item.id}`);
+              setItems(prev => prev.filter(i => i.id !== item.id));
+            } catch (error) {
+              console.error('Error al eliminar:', error);
+              Alert.alert('Error', 'No se pudo eliminar la evaluación.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const renderItem = ({ item }: { item: EvaluationItem }) => (
     <View style={[styles.card, {
       backgroundColor: theme.surface,
       shadowColor: theme.shadow.color,
@@ -39,30 +96,30 @@ const HomeScreen = () => {
       elevation: theme.shadow.elevation,
     }]}>
       <View style={styles.cardHeader}>
-        <Text style={[typography.body, styles.cardTitle, { color: theme.text.primary }]}
-          numberOfLines={1}>
-          {item.title}
+        <Text
+          style={[typography.body, styles.cardTitle, { color: theme.text.primary }]}
+          numberOfLines={1}
+        >
+          {item.projectName}
         </Text>
-        <View style={[styles.badge, {
-          backgroundColor: item.isPublished ? '#D1FAE5' : theme.divider,
-        }]}>
-          <Text style={[typography.label, { color: theme.text.primary }]}>
-            {item.isPublished ? 'Publicado' : 'Borrador'}
-          </Text>
-        </View>
+        <Text style={[typography.small, { color: theme.text.secondary }]}>
+          {formatDate(item.updatedAt)}
+        </Text>
       </View>
 
-      {item.description
-        ? <Text style={[typography.small, { color: theme.text.secondary, marginBottom: spacing.xs }]}
-            numberOfLines={2}>
-            {item.description}
-          </Text>
-        : null}
+      <TouchableOpacity
+        style={[styles.dashboardBtn, { backgroundColor: theme.accent }]}
+        onPress={() => router.push(`/dashboard/${item.id}`)}
+      >
+        <Text style={[typography.small, { color: theme.text.onPrimary, fontWeight: '600' }]}>
+          Ver dashboard
+        </Text>
+      </TouchableOpacity>
 
       <View style={styles.cardActions}>
         <TouchableOpacity
           style={[styles.actionBtn, { backgroundColor: theme.primarySoft }]}
-          onPress={() => router.push(`/edit/${item.id}`)} // 👈 ajusta la ruta
+          onPress={() => handleEdit(item)}
         >
           <Text style={[typography.small, { color: theme.primary, fontWeight: '600' }]}>
             Editar
@@ -70,7 +127,7 @@ const HomeScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionBtn, { backgroundColor: '#FEF2F2' }]}
-          onPress={() => {}} // 👈 lógica de eliminar cuando esté lista
+          onPress={() => handleDelete(item)}
         >
           <Text style={[typography.small, { color: theme.accent, fontWeight: '600' }]}>
             Eliminar
@@ -94,42 +151,45 @@ const HomeScreen = () => {
         </View>
         <TouchableOpacity
           style={[styles.logoutBtn, { backgroundColor: '#FEE2E2' }]}
-          onPress={() => router.replace('/login')} // 👈 ajusta la ruta
+          onPress={() => router.replace('/login')}
         >
           <Text style={[typography.small, { color: '#DC2626', fontWeight: '700' }]}>Cerrar Sesión</Text>
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.list}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={theme.primary}
-          />
-        }
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={[typography.h3, { color: theme.text.secondary, marginBottom: spacing.sm }]}>
-              Sin evaluaciones
-            </Text>
-            <Text style={[typography.small, styles.emptySubtitle, { color: theme.text.disabled }]}>
-              Toca el botón + para crear tu primera evaluación
-            </Text>
-          </View>
-        }
-      />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.list}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={theme.primary}
+            />
+          }
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Text style={[typography.h3, { color: theme.text.secondary, marginBottom: spacing.sm }]}>
+                Sin evaluaciones
+              </Text>
+              <Text style={[typography.small, styles.emptySubtitle, { color: theme.text.disabled }]}>
+                Toca el botón + para crear tu primera evaluación
+              </Text>
+            </View>
+          }
+        />
+      )}
 
       <TouchableOpacity
-        style={[styles.fab, {
-          backgroundColor: theme.primary,
-          shadowColor: theme.primary,
-        }]}
-        onPress={() => router.push('/form')} // 👈 ajusta la ruta
+        style={[styles.fab, { backgroundColor: theme.primary, shadowColor: theme.primary }]}
+        onPress={() => router.push('/form')}
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
@@ -165,22 +225,23 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.xs,
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
   },
   cardTitle: {
     flex: 1,
     fontWeight: '700',
+    marginRight: spacing.sm,
   },
-  badge: {
+  dashboardBtn: {
     borderRadius: radius.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 3,
-    marginLeft: spacing.sm,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+    marginBottom: spacing.sm,
   },
   cardActions: {
     flexDirection: 'row',
     gap: spacing.sm,
-    marginTop: spacing.sm,
   },
   actionBtn: {
     flex: 1,
@@ -195,6 +256,11 @@ const styles = StyleSheet.create({
   emptySubtitle: {
     textAlign: 'center',
     paddingHorizontal: spacing.xl,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   fab: {
     position: 'absolute',

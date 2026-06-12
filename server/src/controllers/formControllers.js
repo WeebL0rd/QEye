@@ -39,7 +39,6 @@ export const saveDocument = async (req, res) => {
     }
 };
 
-
 export const updateDocument = async (req, res) => {
     try {
         const { id } = req.params;
@@ -85,6 +84,36 @@ export const updateDocument = async (req, res) => {
         return res.status(500).json({
         success: false,
         message: 'Error interno al actualizar el documento.',
+        });
+    }
+};
+
+
+export const deleteDocument = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user?.uid;
+
+        if (!userId) {
+        return res.status(401).json({ success: false, message: 'Usuario no autenticado.' });
+        }
+
+        await DocumentDAO.deleteDocument(id, userId);
+
+        return res.status(200).json({
+        success: true,
+        message: 'Documento eliminado exitosamente.',
+        });
+    } catch (error) {
+        console.error('Error al eliminar documento:', error);
+
+        if (error.message?.includes('no encontrado') || error.message?.includes('no autorizado')) {
+        return res.status(404).json({ success: false, message: error.message });
+        }
+
+        return res.status(500).json({
+        success: false,
+        message: 'Error interno al eliminar el documento.',
         });
     }
 };
