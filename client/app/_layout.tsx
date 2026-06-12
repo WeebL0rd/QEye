@@ -4,8 +4,8 @@ import { AuthProvider } from '../src/context/AuthContext';
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
+    <AuthProvider> 
+       <SafeAreaProvider>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="dashboard" />
@@ -14,7 +14,7 @@ export default function RootLayout() {
           <Stack.Screen name="login" />
           <Stack.Screen name="form" />
         </Stack>
-      </AuthProvider>
-    </SafeAreaProvider>
+      </SafeAreaProvider>
+     </AuthProvider>
   );
 }

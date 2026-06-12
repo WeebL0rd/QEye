@@ -5,14 +5,30 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useTheme, spacing, radius, typography } from '../styles/theme';
+import { useAuth } from '../context/AuthContext';
+import { ActivityIndicator, Alert } from 'react-native';
 
 const LoginScreen = () => {
   const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { login } = useAuth();                       
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    router.replace('/home');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Completá todos los campos');
+      return;
+    }
+    try {
+      setLoading(true);
+      await login(email, password);
+      router.replace('/home');
+    } catch (error: any) {
+      Alert.alert('Error', error?.response?.data?.message || 'Credenciales inválidas');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

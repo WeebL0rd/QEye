@@ -5,16 +5,39 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useTheme, radius, typography, spacing } from '../styles/theme';
+import { ActivityIndicator, Alert } from 'react-native';
+import { useAuth } from '../context/AuthContext';
 
 const RegisterScreen = () => {
   const theme = useTheme();
+  const { register } = useAuth();       
+  const [loading, setLoading] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleRegister = () => {
-    router.replace('/home'); 
+  const handleRegister = async () => {
+    console.log('HANDLE REGISTER llamado');
+    if (!displayName || !email || !password || !confirmPassword) {
+      Alert.alert('Error', 'Completá todos los campos');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Las contraseñas no coinciden');
+      return;
+    }
+    try {
+      setLoading(true);
+      console.log('DATOS:', { email, password, displayName });
+      await register(email, password, displayName);
+      router.replace('/home');
+    } catch (error: any) {
+      console.log('ERROR REGISTRO:', JSON.stringify(error?.response?.data || error?.message || error));
+      Alert.alert('Error', error?.response?.data?.message || 'Error al crear la cuenta');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
