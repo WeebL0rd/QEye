@@ -17,7 +17,7 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Completá todos los campos');
+      Alert.alert('Error', 'Debe completar todos los campos');
       return;
     }
     try {
@@ -89,7 +89,7 @@ const LoginScreen = () => {
         <TouchableOpacity onPress={() => router.push('/register')}>
           <Text style={[typography.small, styles.link, { color: theme.text.secondary }]}>
             ¿No tienes cuenta?{' '}
-            <Text style={{ color: theme.primary, fontWeight: '700' }}>Regístrate</Text>
+            <Text style={{ color: theme.primary, fontWeight: '700' }}>Regístrese</Text>
           </Text>
         </TouchableOpacity>
       </View>

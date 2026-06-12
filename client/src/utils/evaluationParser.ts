@@ -9,14 +9,14 @@ export function saveEvaluation(evaluation: Evaluation) : SavedEvaluation {
         createdAt: evaluation.createdAt,
         updatedAt: evaluation.updatedAt,
         scores: evaluation.stages.flatMap(stage => 
-                                            stage.items.flatMap(
-                                                item => item.criteria.map(criterion =>(
-                                                    {
-                                                        criterionId: criterion.id,
-                                                        score: criterion.score
-                                                    }
-                                                ))
+                                        stage.items.flatMap(
+                                            item => item.criteria.map(criterion =>(
+                                                {
+                                                    criterionId: criterion.id,
+                                                    score: criterion.score
+                                                }
                                             ))
+                                        ))
     }
 }
 
@@ -25,6 +25,11 @@ export function loadEvaluation(
     savedEvaluation: SavedEvaluation) : Evaluation {
     return {
         ...template,
+        id: savedEvaluation.id,
+        userId: savedEvaluation.userId,
+        projectName: savedEvaluation.projectName,
+        createdAt: savedEvaluation.createdAt,
+        updatedAt: savedEvaluation.updatedAt,
         stages: template.stages.map(stage => ({
             ...stage,
             items: stage.items.map(item => ({

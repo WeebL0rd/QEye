@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import api from '../services/api';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,27 +12,41 @@ import ItemCard from '../components/ItemCard';
 import rubricTemplate from '../constants/rubricTemplate';
 import { Evaluation, SavedEvaluation } from '../types/evaluation';
 import { calculateTotalEvaluationScores } from '../utils/evaluationCalculations';
-import { loadEvaluation,saveEvaluation } from '../utils/evaluationParser';
+import { loadEvaluation, saveEvaluation } from '../utils/evaluationParser';
 
 interface EvaluationFormsProps {
   evaluationMetadata: SavedEvaluation;
 }
 
 export default function EvaluationForms(
-  {evaluationMetadata} : EvaluationFormsProps
+  { evaluationMetadata }: EvaluationFormsProps
 ) {
-  // Cargar theme y router
   const theme = useTheme();
   const router = useRouter();
   const globalStyles = createGlobalStyles(theme);
 
   // Cargar evaluación
-  const loadedEvaluation = loadEvaluation(rubricTemplate, evaluationMetadata)
+  const loadedEvaluation = loadEvaluation(rubricTemplate, evaluationMetadata);
   const [evaluation, setEvaluation] = useState<Evaluation>(loadedEvaluation);
+
+  // Estado para edición del nombre
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [projectNameDraft, setProjectNameDraft] = useState(evaluation.projectName);
 
   // Estado para controlar qué stage/item está expandido (null = ninguno)
   const [expandedStageId, setExpandedStageId] = useState<number | null>(null);
   const [expandedItemId, setExpandedItemId] = useState<number | null>(null);
+
+  const handleConfirmName = () => {
+    const trimmed = projectNameDraft.trim();
+    if (trimmed) {
+      setEvaluation(prev => ({ ...prev, projectName: trimmed }));
+    } else {
+      // Si quedó vacío, revertir al nombre anterior
+      setProjectNameDraft(evaluation.projectName);
+    }
+    setIsEditingName(false);
+  };
 
   const handleUpdateCriterionScore = (criterionId: number, score: number) => {
     setEvaluation(prev => ({
@@ -53,7 +68,7 @@ export default function EvaluationForms(
 
   const handleToggleStage = (stageId: number) => {
     setExpandedStageId(prev => prev === stageId ? null : stageId);
-    setExpandedItemId(null); // Cerrar items al cambiar de stage
+    setExpandedItemId(null);
   };
 
   const handleToggleItem = (itemId: number) => {
@@ -68,18 +83,36 @@ export default function EvaluationForms(
     return theme.deficient;
   };
 
-  const handleSave = () => {
-    const saved = saveEvaluation(evaluation);
-    //TODO: Guardar en base de datos
-    console.log('Evaluación guardada compacta:', saved);
-    alert('Evaluación guardada!');
-    //TODO: Cerrar la pantalla y regresar a la anterior actualizando con los nuevos datos
-    // o nadamás dejar la alerta y que se cierre la pantalla cuando el usuario se devuelva con el botón de back
+  const handleSave = async () => {
+    // Si el usuario dejó el campo abierto, confirmar nombre antes de guardar
+    if (isEditingName) handleConfirmName();
+
+    try {
+      const saved = saveEvaluation(evaluation);
+      const isNew = saved.id === 'Pending';
+
+      // Si es nueva → POST /docs/save
+      // Si ya existe → PUT /docs/update/:id
+      const response = isNew
+        ? await api.post('/docs/save', saved)
+        : await api.put(`/docs/update/${saved.id}`, saved);
+
+      if (!response.data.success) {
+        alert(`Error al guardar: ${response.data.message}`);
+        return;
+      }
+
+      alert('Evaluación guardada!');
+      router.back();
+    } catch (error) {
+      console.error('Error al guardar:', error);
+      alert('Error de conexión al guardar.');
+    }
   };
 
   return (
-    <SafeAreaView 
-      style={{ flex: 2, backgroundColor: theme.background }} 
+    <SafeAreaView
+      style={{ flex: 2, backgroundColor: theme.background }}
       edges={['top', 'left', 'right']}
     >
       {/* Encabezado personalizado */}
@@ -94,7 +127,7 @@ export default function EvaluationForms(
         backgroundColor: theme.surface,
       }}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
-          {<Ionicons name="arrow-back" size={24} color={theme.text.primary} /> }
+          <Ionicons name="arrow-back" size={24} color={theme.text.primary} />
         </TouchableOpacity>
         <Text style={[typography.h2, { color: theme.text.primary }]}>
           Editar
@@ -106,22 +139,65 @@ export default function EvaluationForms(
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.push('/dashboard')} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
           <Text style={[typography.body, { color: theme.primary, fontWeight: '600' }]}>
-              Dashboard
+            Dashboard
           </Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={[globalStyles.scrollContent, { paddingBottom: spacing.xl }]}>
-        {/* Header con puntuación total */}
-        <View style={{ 
-          padding: 20, 
-          borderRadius: 16, 
+        {/* Header con nombre editable y puntuación total */}
+        <View style={{
+          padding: 20,
+          borderRadius: 16,
           marginBottom: 20,
-
         }}>
-          <Text style={[typography.h1, { color: theme.text.primary, marginBottom: 16 }]}>
-            {evaluation.projectName}
-          </Text>
+          {/* Nombre del proyecto con botón de edición */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16, gap: 8 }}>
+            {isEditingName ? (
+              <>
+                <TextInput
+                  value={projectNameDraft}
+                  onChangeText={setProjectNameDraft}
+                  onSubmitEditing={handleConfirmName}
+                  autoFocus
+                  style={[
+                    typography.h1,
+                    {
+                      flex: 1,
+                      color: theme.text.primary,
+                      borderBottomWidth: 2,
+                      borderBottomColor: theme.primary,
+                      paddingBottom: 2,
+                    }
+                  ]}
+                />
+                {/* Botón confirmar */}
+                <TouchableOpacity
+                  onPress={handleConfirmName}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Ionicons name="checkmark" size={22} color={theme.primary} />
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text style={[typography.h1, { flex: 1, color: theme.text.primary }]}>
+                  {evaluation.projectName}
+                </Text>
+                {/* Botón lápiz */}
+                <TouchableOpacity
+                  onPress={() => {
+                    setProjectNameDraft(evaluation.projectName);
+                    setIsEditingName(true);
+                  }}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Ionicons name="pencil-outline" size={20} color={theme.text.secondary} />
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <View>
               <Text style={[typography.body, { color: theme.text.secondary, marginBottom: 4 }]}>
@@ -156,7 +232,6 @@ export default function EvaluationForms(
             isExpanded={expandedStageId === stage.id}
             onToggle={() => handleToggleStage(stage.id)}
           >
-            {/* Items dentro del stage expandido */}
             <View style={{ paddingLeft: 16, paddingTop: 8 }}>
               {stage.items.map(item => (
                 <ItemCard

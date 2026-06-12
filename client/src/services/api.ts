@@ -1,9 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = __DEV__
-  ? 'http://192.168.68.106:3001/api'
-  : 'https://qeye-server.vercel.app/api';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL
 
 const api = axios.create({
   baseURL: BASE_URL,

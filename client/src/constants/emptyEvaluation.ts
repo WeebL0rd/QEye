@@ -1,17 +1,17 @@
 import { SavedEvaluation } from "../types/evaluation";
 
 export const savedEvaluation: SavedEvaluation = {
-  id: "template",
-  userId: "template",
-  projectName: "Template",
-  createdAt: new Date("1970-01-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-06-05T15:45:57.373Z"),
+  id: "Pending",
+  userId: "Pending",
+  projectName: "New Project",
+  createdAt: new Date(),
+  updatedAt: new Date(),
   scores: [
-    { criterionId: 10101, score: 2 },
+    { criterionId: 10101, score: 0 },
     { criterionId: 10102, score: 0 },
     { criterionId: 10103, score: 0 },
     { criterionId: 10104, score: 0 },
-    { criterionId: 10105, score: 5 },
+    { criterionId: 10105, score: 0 },
     { criterionId: 10106, score: 0 },
 
     { criterionId: 10201, score: 0 },
