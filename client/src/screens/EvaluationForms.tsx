@@ -137,7 +137,8 @@ export default function EvaluationForms(
             Guardar
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/dashboard')} hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
+        <TouchableOpacity onPress={() => router.push({ pathname: '/dashboard', params: { evaluation: JSON.stringify(saveEvaluation(evaluation))}})}
+                          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
           <Text style={[typography.body, { color: theme.primary, fontWeight: '600' }]}>
             Dashboard
           </Text>

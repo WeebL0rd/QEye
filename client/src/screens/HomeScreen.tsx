@@ -3,7 +3,7 @@ import {
   View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, ActivityIndicator, Alert,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { useTheme, spacing, radius, typography } from '../styles/theme' 
+import { useTheme, spacing, radius, typography } from '../styles/theme'
 import api from '../services/api';
 
 type EvaluationItem = {
@@ -66,7 +66,7 @@ const HomeScreen = () => {
   const handleDelete = (item: EvaluationItem) => {
     Alert.alert(
       'Eliminar evaluación',
-      `¿Estás seguro que querés eliminar "${item.projectName}"?`,
+      `¿Está seguro que quiere eliminar "${item.projectName}"?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -109,7 +109,7 @@ const HomeScreen = () => {
 
       <TouchableOpacity
         style={[styles.dashboardBtn, { backgroundColor: theme.accent }]}
-        onPress={() => router.push(`/dashboard/${item.id}`)}
+        onPress={() => router.push({ pathname: '/dashboard', params: { evaluation: JSON.stringify(item) } })}
       >
         <Text style={[typography.small, { color: theme.text.onPrimary, fontWeight: '600' }]}>
           Ver dashboard

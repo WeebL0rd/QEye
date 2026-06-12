@@ -48,7 +48,7 @@ const LoginScreen = () => {
           QEye
         </Text>
         <Text style={[typography.body, styles.subtitle, { color: theme.text.secondary }]}>
-          Inicia sesión en tu cuenta
+          Inicie sesión en su cuenta
         </Text>
 
         <TextInput
@@ -88,10 +88,48 @@ const LoginScreen = () => {
 
         <TouchableOpacity onPress={() => router.push('/register')}>
           <Text style={[typography.small, styles.link, { color: theme.text.secondary }]}>
-            ¿No tienes cuenta?{' '}
+            ¿No tiene cuenta?{' '}
             <Text style={{ color: theme.primary, fontWeight: '700' }}>Regístrese</Text>
           </Text>
         </TouchableOpacity>
+        <View
+          style={{
+            marginTop: 24,
+            padding: 12,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: theme.border,
+            backgroundColor: theme.background,
+          }}
+        >
+          <Text
+            style={[
+              typography.body,
+              {
+                color: theme.text.primary,
+                fontWeight: '700',
+                marginBottom: 8,
+                textAlign: 'center',
+              },
+            ]}
+          >
+            Proyecto inspirado por:
+          </Text>
+          <Text
+            style={[
+              typography.small,
+              {
+                color: theme.text.secondary,
+                textAlign: 'center',
+                lineHeight: 20,
+              },
+            ]}
+          >
+            Olman Gerardo Alvarado Zúñiga{'\n'}
+            Samuel Valverde Arguedas{'\n'}
+            Andrés Salas Araya
+          </Text>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
