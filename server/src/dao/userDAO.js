@@ -12,6 +12,7 @@ const UserDAO = {
       displayName,
     });
 
+    
     // Guarda el perfil en Firestore
     await db.collection('users').doc(userRecord.uid).set({
       uid: userRecord.uid,
